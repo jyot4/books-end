@@ -114,7 +114,49 @@ router.get(`/commentbooks/:session`, authorize, async (req, res) => {
 
 })
 
+//.......................Rating......................//
+router.get('/ratingbooks/:session', authorize, async(req, res) =>{
+  let username = req.authUsername;
+  const filterUser = await dashbord.findOne({username}); 
+  let ratingBookIds = filterUser.ratingbook.slice(1)
+ 
 
+  
+  let temp =  ratingBookIds.map((books) =>{
+              return books.bookId
+    }) 
+
+
+  // take all rating  
+  let rate = ratingBookIds.map((book) =>{
+       return book.rating
+  })  
+    
+  
+// console.log(`${temp} ${rate}`)
+
+  // all books rating data
+  const collectedData = await Promise.all(temp.map(async(_id) =>{ 
+    return await book.findOne({_id});
+  }));
+
+  // console.log(collectedData)
+
+//  // merging rating with data
+  const modifiedData = collectedData.map((bookData, i) => {
+    return {
+      ...bookData.toObject(), // Convert Mongoose document to plain object
+      rating: rate[i], // Assign the corresponding rating
+    };
+  });
+
+//   console.log(modifiedData)
+
+//   const collectData = modifiedData;
+//   console.log(collectData);
+    
+  res.send({status:200, message: "got all rated bookData", collectData: modifiedData}) 
+})
 
 
 export default router;
